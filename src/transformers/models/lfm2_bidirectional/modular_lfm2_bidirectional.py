@@ -28,8 +28,6 @@ from .configuration_lfm2_bidirectional import Lfm2BidirectionalConfig
 
 
 class Lfm2BidirectionalShortConv(nn.Module):
-    """Non-causal short convolution: a centered depthwise conv1d, no cache / generation machinery."""
-
     def __init__(self, config: Lfm2BidirectionalConfig, layer_idx: int):
         super().__init__()
         self.config = config
