@@ -27,6 +27,11 @@ class Lfm2BidirectionalConfig(PreTrainedConfig):
         Whether to use bias in the conv layers.
     conv_L_cache (`int`, *optional*, defaults to 3):
         L_cache dim in the conv layers.
+    conv_zero_padding (`bool`, *optional*, defaults to `True`):
+        Whether to zero out padding positions before the non-causal short convolution. This is the
+        padding-invariant behavior (a zeroed padding neighbor matches the convolution's own zero-padding for
+        an unpadded sequence). Checkpoints exported with `transformers<5.0` (e.g. the LFM2.5 Embedding and
+        ColBERT models) were trained without this and should set it to `False` for exact reproduction.
     block_multiple_of (`int`, *optional*, defaults to 256):
         Multiple for the `intermediate_size`.
     block_ffn_dim_multiplier (`float`, *optional*, defaults to 1.0):
@@ -71,6 +76,7 @@ class Lfm2BidirectionalConfig(PreTrainedConfig):
     rope_parameters: RopeParameters | dict | None = None
     conv_bias: bool = False
     conv_L_cache: int = 3
+    conv_zero_padding: bool = True
     block_multiple_of: int = 256
     block_ffn_dim_multiplier: float | int = 1.0
     block_auto_adjust_ff_dim: bool = True

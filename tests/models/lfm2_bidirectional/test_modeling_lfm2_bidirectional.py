@@ -25,7 +25,11 @@ from ...test_modeling_common import ModelTesterMixin, ids_tensor, random_attenti
 if is_torch_available():
     import torch
 
-    from transformers import Lfm2BidirectionalModel
+    from transformers import (
+        Lfm2BidirectionalForMaskedLM,
+        Lfm2BidirectionalForTokenClassification,
+        Lfm2BidirectionalModel,
+    )
 
 
 class Lfm2BidirectionalModelTester:
@@ -45,6 +49,7 @@ class Lfm2BidirectionalModelTester:
         conv_L_cache=3,
         layer_types=["conv", "full_attention"],
         initializer_range=0.02,
+        num_labels=3,
         scope=None,
     ):
         self.parent = parent
@@ -62,6 +67,7 @@ class Lfm2BidirectionalModelTester:
         self.layer_types = layer_types
         self.num_hidden_layers = len(layer_types)
         self.initializer_range = initializer_range
+        self.num_labels = num_labels
         self.scope = scope
 
     def prepare_config_and_inputs(self):
@@ -87,6 +93,7 @@ class Lfm2BidirectionalModelTester:
             layer_types=self.layer_types,
             block_auto_adjust_ff_dim=False,
             initializer_range=self.initializer_range,
+            num_labels=self.num_labels,
             rope_parameters={"rope_type": "default", "rope_theta": 1000000.0},
         )
 
@@ -98,6 +105,21 @@ class Lfm2BidirectionalModelTester:
         result = model(input_ids)
         self.parent.assertEqual(result.last_hidden_state.shape, (self.batch_size, self.seq_length, self.hidden_size))
 
+    def create_and_check_for_masked_lm(self, config, input_ids, input_mask):
+        model = Lfm2BidirectionalForMaskedLM(config=config)
+        model.to(torch_device)
+        model.eval()
+        result = model(input_ids, attention_mask=input_mask, labels=input_ids)
+        self.parent.assertEqual(result.logits.shape, (self.batch_size, self.seq_length, self.vocab_size))
+
+    def create_and_check_for_token_classification(self, config, input_ids, input_mask):
+        model = Lfm2BidirectionalForTokenClassification(config=config)
+        model.to(torch_device)
+        model.eval()
+        labels = ids_tensor([self.batch_size, self.seq_length], self.num_labels)
+        result = model(input_ids, attention_mask=input_mask, labels=labels)
+        self.parent.assertEqual(result.logits.shape, (self.batch_size, self.seq_length, self.num_labels))
+
     def prepare_config_and_inputs_for_common(self):
         config, input_ids, input_mask = self.prepare_config_and_inputs()
         inputs_dict = {"input_ids": input_ids, "attention_mask": input_mask}
@@ -106,7 +128,11 @@ class Lfm2BidirectionalModelTester:
 
 @require_torch
 class Lfm2BidirectionalModelTest(ModelTesterMixin, unittest.TestCase):
-    all_model_classes = (Lfm2BidirectionalModel,) if is_torch_available() else ()
+    all_model_classes = (
+        (Lfm2BidirectionalModel, Lfm2BidirectionalForMaskedLM, Lfm2BidirectionalForTokenClassification)
+        if is_torch_available()
+        else ()
+    )
     test_pruning = False
     test_head_masking = False
 
@@ -120,6 +146,14 @@ class Lfm2BidirectionalModelTest(ModelTesterMixin, unittest.TestCase):
     def test_model(self):
         config_and_inputs = self.model_tester.prepare_config_and_inputs()
         self.model_tester.create_and_check_model(*config_and_inputs)
+
+    def test_for_masked_lm(self):
+        config_and_inputs = self.model_tester.prepare_config_and_inputs()
+        self.model_tester.create_and_check_for_masked_lm(*config_and_inputs)
+
+    def test_for_token_classification(self):
+        config_and_inputs = self.model_tester.prepare_config_and_inputs()
+        self.model_tester.create_and_check_for_token_classification(*config_and_inputs)
 
     def test_attention_outputs(self):
         """LFM2Bidirectional alternates between attention and short-conv layers, so only attention layers
@@ -148,8 +182,11 @@ class Lfm2BidirectionalIntegrationTest(unittest.TestCase):
 
     def _last_hidden_state(self, model_id):
         tokenizer = AutoTokenizer.from_pretrained(model_id)
+        # The Embedding/ColBERT checkpoints were exported with transformers 4.56 (no conv pad-zeroing).
         model = (
-            Lfm2BidirectionalModel.from_pretrained(model_id, dtype=torch.float32, attn_implementation="eager")
+            Lfm2BidirectionalModel.from_pretrained(
+                model_id, dtype=torch.float32, attn_implementation="eager", conv_zero_padding=False
+            )
             .to(torch_device)
             .eval()
         )

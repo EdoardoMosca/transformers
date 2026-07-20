@@ -13,7 +13,7 @@ specific language governing permissions and limitations under the License.
 rendered properly in your Markdown viewer.
 
 -->
-*This model was contributed to Hugging Face Transformers on 2026-06-29.*
+*This model was contributed to Hugging Face Transformers on 2026-07-02.*
 
 # LFM2Bidirectional
 
@@ -59,6 +59,16 @@ with torch.no_grad():
 ## Lfm2BidirectionalModel
 
 [[autodoc]] Lfm2BidirectionalModel
+    - forward
+
+## Lfm2BidirectionalForMaskedLM
+
+[[autodoc]] Lfm2BidirectionalForMaskedLM
+    - forward
+
+## Lfm2BidirectionalForTokenClassification
+
+[[autodoc]] Lfm2BidirectionalForTokenClassification
     - forward
 
 ## Lfm2BidirectionalPreTrainedModel
