@@ -27,6 +27,7 @@ if is_torch_available():
 
     from transformers import (
         Lfm2BidirectionalForMaskedLM,
+        Lfm2BidirectionalForSequenceClassification,
         Lfm2BidirectionalForTokenClassification,
         Lfm2BidirectionalModel,
     )
@@ -120,6 +121,14 @@ class Lfm2BidirectionalModelTester:
         result = model(input_ids, attention_mask=input_mask, labels=labels)
         self.parent.assertEqual(result.logits.shape, (self.batch_size, self.seq_length, self.num_labels))
 
+    def create_and_check_for_sequence_classification(self, config, input_ids, input_mask):
+        model = Lfm2BidirectionalForSequenceClassification(config=config)
+        model.to(torch_device)
+        model.eval()
+        labels = ids_tensor([self.batch_size], self.num_labels)
+        result = model(input_ids, attention_mask=input_mask, labels=labels)
+        self.parent.assertEqual(result.logits.shape, (self.batch_size, self.num_labels))
+
     def prepare_config_and_inputs_for_common(self):
         config, input_ids, input_mask = self.prepare_config_and_inputs()
         inputs_dict = {"input_ids": input_ids, "attention_mask": input_mask}
@@ -129,7 +138,12 @@ class Lfm2BidirectionalModelTester:
 @require_torch
 class Lfm2BidirectionalModelTest(ModelTesterMixin, unittest.TestCase):
     all_model_classes = (
-        (Lfm2BidirectionalModel, Lfm2BidirectionalForMaskedLM, Lfm2BidirectionalForTokenClassification)
+        (
+            Lfm2BidirectionalModel,
+            Lfm2BidirectionalForMaskedLM,
+            Lfm2BidirectionalForSequenceClassification,
+            Lfm2BidirectionalForTokenClassification,
+        )
         if is_torch_available()
         else ()
     )
@@ -150,6 +164,10 @@ class Lfm2BidirectionalModelTest(ModelTesterMixin, unittest.TestCase):
     def test_for_masked_lm(self):
         config_and_inputs = self.model_tester.prepare_config_and_inputs()
         self.model_tester.create_and_check_for_masked_lm(*config_and_inputs)
+
+    def test_for_sequence_classification(self):
+        config_and_inputs = self.model_tester.prepare_config_and_inputs()
+        self.model_tester.create_and_check_for_sequence_classification(*config_and_inputs)
 
     def test_for_token_classification(self):
         config_and_inputs = self.model_tester.prepare_config_and_inputs()

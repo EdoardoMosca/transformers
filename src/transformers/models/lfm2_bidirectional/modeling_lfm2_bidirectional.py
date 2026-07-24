@@ -27,7 +27,11 @@ from torch import nn
 from ...cache_utils import Cache
 from ...integrations import use_kernel_forward_from_hub, use_kernel_func_from_hub, use_kernelized_func
 from ...masking_utils import create_bidirectional_mask
-from ...modeling_layers import GenericForTokenClassification, GradientCheckpointingLayer
+from ...modeling_layers import (
+    GenericForSequenceClassification,
+    GenericForTokenClassification,
+    GradientCheckpointingLayer,
+)
 from ...modeling_outputs import BaseModelOutputWithPast, MaskedLMOutput
 from ...modeling_rope_utils import ROPE_INIT_FUNCTIONS, dynamic_rope_update
 from ...modeling_utils import ALL_ATTENTION_FUNCTIONS, PreTrainedModel
@@ -505,12 +509,17 @@ class Lfm2BidirectionalForMaskedLM(Lfm2BidirectionalPreTrainedModel):
         )
 
 
+class Lfm2BidirectionalForSequenceClassification(GenericForSequenceClassification, Lfm2BidirectionalPreTrainedModel):
+    pass
+
+
 class Lfm2BidirectionalForTokenClassification(GenericForTokenClassification, Lfm2BidirectionalPreTrainedModel):
     pass
 
 
 __all__ = [
     "Lfm2BidirectionalForMaskedLM",
+    "Lfm2BidirectionalForSequenceClassification",
     "Lfm2BidirectionalForTokenClassification",
     "Lfm2BidirectionalModel",
     "Lfm2BidirectionalPreTrainedModel",

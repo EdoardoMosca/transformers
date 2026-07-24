@@ -15,7 +15,7 @@ import torch
 from torch import nn
 
 from ...masking_utils import create_bidirectional_mask
-from ...modeling_layers import GenericForTokenClassification
+from ...modeling_layers import GenericForSequenceClassification, GenericForTokenClassification
 from ...modeling_outputs import BaseModelOutputWithPast, MaskedLMOutput
 from ...processing_utils import Unpack
 from ...utils import TransformersKwargs, auto_docstring, can_return_tuple
@@ -214,12 +214,17 @@ class Lfm2BidirectionalForMaskedLM(Lfm2BidirectionalPreTrainedModel):
         )
 
 
+class Lfm2BidirectionalForSequenceClassification(GenericForSequenceClassification, Lfm2BidirectionalPreTrainedModel):
+    pass
+
+
 class Lfm2BidirectionalForTokenClassification(GenericForTokenClassification, Lfm2BidirectionalPreTrainedModel):
     pass
 
 
 __all__ = [
     "Lfm2BidirectionalForMaskedLM",
+    "Lfm2BidirectionalForSequenceClassification",
     "Lfm2BidirectionalForTokenClassification",
     "Lfm2BidirectionalModel",
     "Lfm2BidirectionalPreTrainedModel",

@@ -1399,6 +1399,7 @@ MODEL_FOR_SEQUENCE_CLASSIFICATION_MAPPING_NAMES = OrderedDict(
         ("layoutlm", "LayoutLMForSequenceClassification"),
         ("layoutlmv2", "LayoutLMv2ForSequenceClassification"),
         ("layoutlmv3", "LayoutLMv3ForSequenceClassification"),
+        ("lfm2_bidirectional", "Lfm2BidirectionalForSequenceClassification"),
         ("lilt", "LiltForSequenceClassification"),
         ("llama", "LlamaForSequenceClassification"),
         ("longformer", "LongformerForSequenceClassification"),
